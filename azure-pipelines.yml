@@ -14,6 +14,7 @@ steps:
   inputs:
     Contents: '**'
     TargetFolder: '$(Build.ArtifactStagingDirectory)'
+
 - task: PublishBuildArtifacts@1
   inputs:
     PathtoPublish: '$(Build.ArtifactStagingDirectory)'
@@ -23,6 +24,7 @@ steps:
 - task: GoTool@0
   inputs:
     version: '1.16'
+    
 - task: Go@0
   inputs:
     command: 'build'
