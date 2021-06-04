@@ -7,25 +7,25 @@ import (
 )
 
 type Dispatcher struct {
+	concurrency int
 	workers     []*Worker
 	pool        chan chan *Task // A pool of workers channels that are registered
 	queue       chan *Task      // tasks are sent in this channel
-	concurrency int
 	quit        chan bool
+	stopChan    chan bool
 	stopped     bool
 	wg          sync.WaitGroup
-	stopChan    chan bool
 }
 
-func New(concurrency, queueSize int) *Dispatcher {
+func New(concurrency, qSize int) *Dispatcher {
 	disp := Dispatcher{
+		concurrency: concurrency,
 		workers:     make([]*Worker, concurrency),
 		pool:        make(chan chan *Task, concurrency),
-		queue:       make(chan *Task, queueSize),
-		concurrency: concurrency,
+		queue:       make(chan *Task, qSize),
 		quit:        make(chan bool),
-		wg:          sync.WaitGroup{},
 		stopChan:    make(chan bool),
+		wg:          sync.WaitGroup{},
 	}
 	return &disp
 }

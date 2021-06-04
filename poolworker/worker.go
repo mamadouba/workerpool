@@ -58,7 +58,7 @@ func (w *Worker) Start(wg *sync.WaitGroup) {
 				if err != nil {
 					log.Printf("worker-%d: %s failed, error='%v'\n", w.ID, task.ID, err)
 				} else {
-					log.Printf("worker-%d: %s succeeded\n", w.ID, task.ID)
+					log.Printf("worker-%d: %s succeed\n", w.ID, task.ID)
 				}
 			}
 		}
