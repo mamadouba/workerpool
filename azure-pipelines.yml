@@ -23,7 +23,7 @@ steps:
 - task: Go@0
   inputs:
     command: 'test'
-    arguments: '-v'
+    arguments: '-v ./...'
     workingDirectory: '$(modulePath)'
 
 - task: Go@0
