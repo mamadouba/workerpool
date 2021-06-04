@@ -6,34 +6,64 @@
 trigger:
 - master
 
-pool:
-  vmImage: ubuntu-latest
+stages:
+- stage: 'BuildTest'
+  displayName: 'Build and Test'
+  variables:
+    GOVERSION: '1.16'
+    CGO_ENABLED: '0'
+    GOARCH: 'linux'
+  jobs:
+  - job: 'BuildTestBackend'
+    displayName: 'Build and Test Go Backend'
+    pool:
+      vmImage: 'Ubuntu 18.04'
+    steps:
+    - task: GoTool@0
+      inputs:
+        version: $(GOVERSION)
+      displayName: 'Install and select Go version $(GOVERSION)'
 
-steps:
-- task: GoTool@0
-  inputs:
-    version: '1.16'
+    - script: |
+        # Get tools for converting Go's test report
+        get get -u github.com/jstemmer/go-junit-report 2>&1
+        get get -u github.com/axw/gocov/gocov 2>&1
+        get get -u github.com/AlekSi/gocov-xml 2>&1
 
-- task: Go@0
-  inputs:
-    command: 'get'
-    arguments: '-d'
-    workingDirectory: '$(System.DefaultWorkingDirectory)'
+        # Run Go tests
+        go test ./... -v -coverprofile=cobvrage.txt -covermode count 2>&1
+        rc=${PIPESTATUS[0]}
 
-- task: Go@0
-  inputs:
-    command: 'test'
-    arguments: '-v ./...'
-    workingDirectory: '$(modulePath)'
+        # Convert coverage file into XML
+        HOME/go/bin/gocov convert covrage.txt > covrage.json
+        HOME/go/bin/gocov-xml < convert covrage.json > covrage.xml
 
-- task: Go@0
-  inputs:
-    command: 'build'
-    workingDirectory: '$(System.DefaultWorkingDirectory)'
+        # check if test failed
+        if [ rc -ne 0 ]; then echo "tests failed"; fi
+      displayName: 'Run unit tests'
+      failOnStderr: true
 
-- task: CopyFiles@2
-  inputs:
-    TargetFolder: '$(Build.ArtifactStagingDirectory)'
-- task: PublishBuildArtifacts@1
-  inputs:
-    ArtifactName: 'drop'
+    - task: Go@0
+      inputs:
+        command: 'build'
+        arguments: '-a -o app'
+      displayName: 'Build Go app'
+
+    - publish: '$(Build.SourcesDirectory)/app'
+      artifact: 'Executable'
+      displayName: 'Publish pipline artifact'
+    
+    - task: PublishTestResults@2
+      inputs:
+        testResultsFormat: 'JUnit'
+        testResultsFiles: '*report*.xml'
+        searchFolder: '$(Build.SourcesDirectory)'
+      condition: always()
+      displayName: 'Publish test results'
+    
+    - task: PublishCodeCoverageResults@1
+      condition: always()
+      inputs:
+        codeCoverageTool: 'Cobertura'
+        summaryFileLocation: '$(Build.SourcesDirectory)/covrage.xml'
+      displayName: 'Publish code coverage results'
