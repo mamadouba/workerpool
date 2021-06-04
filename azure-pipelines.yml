@@ -26,20 +26,20 @@ stages:
 
     - script: |
         # Get tools for converting Go's test report
-        get get -u github.com/jstemmer/go-junit-report 2>&1
-        get get -u github.com/axw/gocov/gocov 2>&1
-        get get -u github.com/AlekSi/gocov-xml 2>&1
+        go get -u github.com/jstemmer/go-junit-report 2>&1
+        go get -u github.com/axw/gocov/gocov 2>&1
+        go get -u github.com/AlekSi/gocov-xml 2>&1
 
         # Run Go tests
-        go test ./... -v -coverprofile=cobvrage.txt -covermode count 2>&1
-        rc=${PIPESTATUS[0]}
+        go test ./... -v -coverprofile=covrage.txt -covermode=count 2>&1
+        rc=$?
 
         # Convert coverage file into XML
         HOME/go/bin/gocov convert covrage.txt > covrage.json
         HOME/go/bin/gocov-xml < convert covrage.json > covrage.xml
 
-        # check if test failed
-        if [ rc -ne 0 ]; then echo "tests failed"; fi
+        # check if test failed 
+        if [ $rc -ne 0 ]; then echo "tests failed"; fi
       displayName: 'Run unit tests'
       failOnStderr: true
 
