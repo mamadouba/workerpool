@@ -69,8 +69,8 @@ stages:
         summaryFileLocation: '$(Build.SourcesDirectory)/covrage.xml'
       displayName: 'Publish code coverage results'
 
-- stage: 'PublishImage'
-  displayName: 'Publish Image'
+- stage: 'Release'
+  displayName: 'Release docker image'
   jobs:
   - job: 'PublishDockerImage'
     displayName: 'Publish Docker Image'
@@ -88,7 +88,7 @@ stages:
     - task: Docker@2
       inputs:
         command: login
-        containerRegistry: 'Docker Hub CR'
+        containerRegistry: 'Docker Hub'
       displayName: 'Login to docker hub'
     - task: Docker@2
       inputs:
