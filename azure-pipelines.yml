@@ -6,13 +6,14 @@
 trigger:
 - master
 
+variables:
+  GOVERSION: '1.16'
+  CGO_ENABLED: '0'
+  GOOS: 'linux'
+
 stages:
-- stage: 'BuildTest'
+- stage: 'BuildAndTest'
   displayName: 'Build and Test'
-  variables:
-    GOVERSION: '1.16'
-    CGO_ENABLED: '0'
-    GOOS: 'linux'
   jobs:
   - job: 'BuildTestBackend'
     displayName: 'Build and Test Go Backend'
@@ -40,8 +41,8 @@ stages:
 
         # check if test failed 
         if [ $rc -ne 0 ]; then echo "tests failed"; fi
-      displayName: 'Run unit tests'
       failOnStderr: true
+      displayName: 'Run unit tests'
 
     - task: Go@0
       inputs:
@@ -57,7 +58,7 @@ stages:
       condition: always()
       inputs:
         testResultsFormat: 'JUnit'
-        testResultsFiles: "TEST-*.xml"
+        testResultsFiles: '*report*.xml'
         searchFolder: '$(Build.SourcesDirectory)'
       displayName: 'Publish test results'
     
@@ -67,3 +68,33 @@ stages:
         codeCoverageTool: 'Cobertura'
         summaryFileLocation: '$(Build.SourcesDirectory)/covrage.xml'
       displayName: 'Publish code coverage results'
+
+- stage: 'PublishImage'
+  displayName: 'Publish Image'
+  jobs:
+  - job: 'PublishDockerImage'
+    displayName: 'Publish Docker Image'
+    pool:
+      vmImage: 'Ubuntu 18.04'
+    steps:
+    - download: current
+      artifact: Executable
+      displayName: 'Download pipeline artifact'
+    - task: CopyFile@2
+      inputs:
+        sourceFolder: '$(Agent.BuildDirectory)/Executable'
+        targetFolder: '$(Build.SourcesDirectory)'
+      displayName: 'Copy executable to folder with Dockerfile'
+    - task: Docker@2
+      inputs:
+        command: login
+        containerRegistry: 'Docker Hub CR'
+      displayName: 'Login to docker hub'
+    - task: Docker@2
+      inputs:
+        command: buildAndPush
+        repository: workerpool
+        tags: |
+          latest
+          $(Build.BuildId)
+      displayName: 'Build and push docker image'
