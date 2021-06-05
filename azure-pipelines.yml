@@ -56,7 +56,7 @@ stages:
     - task: PublishTestResults@2
       inputs:
         testResultsFormat: 'JUnit'
-        testResultsFiles: '*report*.xml'
+        testResultsFiles: '*.xml'
         searchFolder: '$(Build.SourcesDirectory)'
       condition: always()
       displayName: 'Publish test results'
