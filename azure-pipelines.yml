@@ -80,7 +80,7 @@ stages:
     - download: current
       artifact: Executable
       displayName: 'Download pipeline artifact'
-    - task: CopyFile@2
+    - task: CopyFiles@2
       inputs:
         sourceFolder: '$(Agent.BuildDirectory)/Executable'
         targetFolder: '$(Build.SourcesDirectory)'
