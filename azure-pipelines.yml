@@ -12,7 +12,7 @@ stages:
   variables:
     GOVERSION: '1.16'
     CGO_ENABLED: '0'
-    #GOARCH: 'linux'
+    GOOS: 'linux'
   jobs:
   - job: 'BuildTestBackend'
     displayName: 'Build and Test Go Backend'
@@ -36,7 +36,7 @@ stages:
 
         # Convert coverage file into XML
         $HOME/go/bin/gocov convert covrage.txt > covrage.json
-        $HOME/go/bin/gocov-xml < convert covrage.json > covrage.xml
+        $HOME/go/bin/gocov-xml < covrage.json > covrage.xml
 
         # check if test failed 
         if [ $rc -ne 0 ]; then echo "tests failed"; fi
