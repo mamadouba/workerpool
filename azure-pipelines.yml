@@ -54,11 +54,11 @@ stages:
       displayName: 'Publish pipline artifact'
     
     - task: PublishTestResults@2
+      condition: always()
       inputs:
         testResultsFormat: 'JUnit'
-        testResultsFiles: '*.xml'
+        testResultsFiles: '*report*.xml'
         searchFolder: '$(Build.SourcesDirectory)'
-      condition: always()
       displayName: 'Publish test results'
     
     - task: PublishCodeCoverageResults@1
