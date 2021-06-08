@@ -7,24 +7,36 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+	"workerpool/datastruct"
 	"workerpool/poolworker"
 	"workerpool/tasks"
 )
 
-func main1() {
-	c := make(chan int, 2)
-	c <- 1
-	c <- 2
-	a, b := <-c
-	fmt.Println(a, b)
-	close(c)
-	a, b = <-c
-	fmt.Println(a, b)
-	a, b = <-c
-	fmt.Println(a, b)
-
-}
 func main() {
+
+	var stack = datastruct.Stack{}
+	stack.Push(1)
+	stack.Push(5)
+	stack.Push(9)
+
+	for !stack.IsEmpty() {
+		fmt.Println(stack)
+		stack.Pop()
+	}
+
+	var q = datastruct.Queue{}
+	q.Enque(1)
+	q.Enque(2)
+	q.Enque(4)
+	q.Enque(5)
+
+	for !q.IsEmpty() {
+		fmt.Println(q)
+		q.Deque()
+	}
+}
+
+func main1() {
 	const maxTask = 30
 	d := poolworker.New(4, 50).Start()
 	for i := 1; i <= maxTask; i++ {
